@@ -1,0 +1,235 @@
+@charset "UTF-8";
+
+/* ===================== TOKENS ===================== */
+:root{
+  --bg:#F6F7FB;
+  --white:#FFF;
+  --border:#E6E8F0;
+  --text:#1F2937;
+  --heading:#0F172A;
+  --muted:#6B7280;
+
+  --accent:#6C5CE7;
+  --accent-2:#A78BFA;
+
+  --radius:12px;
+
+  --font-body:'Inter',system-ui,sans-serif;
+  --font-heading:'Poppins',system-ui,sans-serif;
+
+  /* Shadows */
+  --shadow-sm:0 4px 12px rgba(15,23,42,.06);
+  --shadow-md:0 12px 32px rgba(15,23,42,.08);
+}
+
+/* ===================== GLOBAL ===================== */
+*{box-sizing:border-box}
+body.admin-body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit}
+
+/* ===================== SIDEBAR ===================== */
+.admin-sidebar{
+  position:fixed; inset:0 auto 0 0;
+  width:240px; background:var(--white);
+  border-right:1px solid var(--border);
+  padding:20px 16px; display:flex; flex-direction:column;
+  overflow-y:auto; z-index:1050;
+}
+.sidebar-brand{
+  display:block; text-align:center; margin-bottom:18px;
+  font:700 1.6rem/1 var(--font-heading);
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  -webkit-background-clip:text; color:transparent;
+}
+.admin-sidebar .nav{gap:6px}
+.admin-sidebar .nav-link{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:8px;
+  color:#64748B; font-weight:600; text-decoration:none;
+  transition:background .2s,color .2s;
+}
+.admin-sidebar .nav-link:hover{background:#F1F5F9; color:var(--heading)}
+.admin-sidebar .nav-link.active{
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  color:#fff; box-shadow:0 3px 10px rgba(108,92,231,.25);
+}
+.logout-link{margin-top:auto; color:#EF4444}
+.logout-link:hover{background:#FEF2F2; border-radius:8px}
+
+/* ===================== MAIN WRAPPER ===================== */
+.admin-main-content{
+  margin-left:240px; padding:24px; min-height:100vh;
+}
+
+/* ===================== HEADER ===================== */
+.admin-header{
+  display:flex; justify-content:space-between; align-items:center; gap:16px;
+  margin-bottom:18px;
+}
+.profile-avatar{
+  width:40px; height:40px; border-radius:50%;
+  border:2px solid var(--accent); object-fit:cover;
+}
+.admin-name{font-weight:600; color:var(--heading); line-height:1.1}
+.admin-role{font-size:.85rem; color:var(--muted)}
+
+/* ===================== SEARCH BAR (UPGRADE) ===================== */
+.search-bar{
+  display:flex; align-items:center; gap:10px; flex:1;
+  background:var(--white); border:1px solid var(--border);
+  border-radius:14px; padding:10px 12px; box-shadow:var(--shadow-sm);
+}
+.search-bar > .small{color:var(--muted); font-weight:600; letter-spacing:.2px}
+
+.search-input{
+  background:#F8FAFC; border:1px solid var(--border);
+  border-radius:10px; padding:8px 12px 8px 36px;
+  transition:border-color .15s, box-shadow .15s, background .15s;
+  min-width:180px; /* gọn hơn mặc định */
+}
+.search-input:focus{
+  background:#FFF; border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(108,92,231,.15); outline:none;
+}
+
+/* icon size统一 */
+.search-input--text,
+.search-input--id{background-size:16px 16px; background-repeat:no-repeat; background-position:10px 50%}
+
+/* icon */
+.search-input--text{
+  background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%2394A3B8' stroke-width='2'/%3E%3Cpath d='M20 20L17 17' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.search-input--id{
+  background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 3L8 21M16 3L14 21M4 8H22M2 16H20' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* Width rút gọn & tách khối */
+.search-input--text{flex:0 0 240px; max-width:240px}
+.search-input--id{flex:0 0 120px; max-width:120px}
+
+/* Divider giữa text và id */
+.search-input--text + .search-input--id{
+  border-left:2px solid #E5E7EB; margin-left:10px; padding-left:22px;
+}
+
+/* Nhóm nút hành động: tách rõ */
+.search-actions{margin-left:12px; padding-left:12px; border-left:2px solid #E5E7EB}
+.search-btn{padding-inline:14px; box-shadow:0 4px 12px rgba(108,92,231,.22)}
+.search-reset{border-color:var(--border)}
+.search-input::placeholder{color:#9AA3AF; opacity:.9; font-size:.92rem}
+
+/* Mobile */
+@media (max-width:575.98px){
+  .search-bar{padding:8px 10px; border-radius:12px}
+  .search-input{min-width:0; width:100%}
+  .search-input--text{flex:1 1 auto; max-width:none}
+  .search-input--id{flex:0 0 110px; max-width:110px}
+  .search-input--text + .search-input--id{
+    margin-left:8px; padding-left:18px; border-left-width:1px
+  }
+  .search-actions{margin-left:10px; padding-left:10px; border-left-width:1px}
+}
+
+/* ===================== CARDS / TABLES ===================== */
+.admin-card{
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-md);
+}
+.admin-card .card-header{
+  background:var(--white); border-bottom:1px solid var(--border);
+  padding:10px 16px; font-weight:600; color:var(--heading);
+}
+
+.admin-table table{margin-bottom:0}
+.admin-table thead th{
+  text-transform:uppercase; font-size:.8rem; font-weight:600;
+  color:#64748B; border-bottom-width:1px !important;
+}
+.admin-table tbody td{vertical-align:middle; color:var(--text)}
+.text-truncate{max-width:420px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.table > :not(caption) > * > *{vertical-align:middle}
+
+/* ===================== USER LIST – COLUMN WIDTHS ===================== */
+.user-col--id{width:72px}
+.user-col--uname{width:20%}
+.user-col--fname{width:22%}
+.user-col--email{width:24%}
+.user-col--role{width:10%}
+.user-col--created{width:14%}
+.user-col--act{width:10%}
+
+/* ===================== BADGES / STATUS ===================== */
+.badge-role{
+  display:inline-block; border-radius:999px; padding:4px 10px;
+  font-size:.78rem; font-weight:700;
+}
+.badge-role.admin{background:#DBEAFE; color:#1E3A8A}   /* xanh dương nhạt */
+.badge-role.user{background:#EDE9FE; color:#5B21B6}    /* tím nhạt */
+
+/* ===================== USER ACTIONS (Sửa/Reset/Xoá) ===================== */
+.user-actions .btn{min-width:58px}
+.user-actions .btn + .btn,
+.user-actions .btn + form,
+.user-actions form + form{margin-left:.5rem}
+
+/* Nút Reset: nền vàng chữ trắng */
+.btn-warning.btn-sm{
+  --bs-btn-bg:#F59E0B; --bs-btn-border-color:#F59E0B;
+  --bs-btn-hover-bg:#D97706; --bs-btn-hover-border-color:#D97706;
+  color:#fff;
+}
+
+/* ===================== KPI / STAT CARD (tùy dùng nơi khác) ===================== */
+.stat-card{
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; display:flex; align-items:center; gap:12px;
+}
+.stat-card .icon{
+  width:44px; height:44px; border-radius:8px; background:#F3F4F6; color:var(--accent);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.05rem;
+}
+.stat-number{font-size:1.6rem; font-weight:700; color:var(--heading)}
+.stat-label{color:var(--muted); font-size:.92rem}
+
+/* ===================== BUTTONS ===================== */
+.btn-primary{
+  --bs-btn-bg:var(--accent); --bs-btn-border-color:var(--accent);
+  --bs-btn-hover-bg:var(--accent-2); --bs-btn-hover-border-color:var(--accent-2);
+  font-weight:600;
+}
+.btn-outline-secondary{color:#374151; border:1px solid var(--border)}
+.btn-outline-secondary:hover{background:#F9FAFB}
+.btn-outline-danger{color:#B91C1C; border:1px solid #FECACA}
+.btn-outline-danger:hover{background:#FEE2E2}
+
+/* ===================== PAGINATION ===================== */
+.pagination .page-link{border-color:var(--border); color:var(--heading)}
+.pagination .page-item.active .page-link{
+  background:var(--accent); border-color:var(--accent)
+}
+
+/* ===================== ALERTS (flash message) ===================== */
+.alert{border-radius:10px; box-shadow:var(--shadow-sm)}
+.alert-warning{border-color:#FDE68A; background:#FEF9C3; color:#78350F}
+
+/* ===================== UTILITIES ===================== */
+.small-muted{color:var(--muted); font-size:.86rem}
+
+/* ===================== RESPONSIVE SIDEBAR ===================== */
+@media (max-width:991.98px){
+  .admin-main-content{margin-left:0; padding:16px}
+  .admin-sidebar{
+    transform:translateX(-100%); transition:transform .25s ease;
+  }
+  .admin-sidebar.show{transform:translateX(0)}
+}
