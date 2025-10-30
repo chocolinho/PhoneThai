@@ -1,18 +1,20 @@
 package dao;
 
 import context.DBContext;
-import context.MaHoa;              // dùng class mã hoá trong package context
+import context.MaHoa;              // PBKDF2: iterations:salt:hash
 import entity.User;
 
 import java.sql.*;
-import java.util.*;
-import java.util.logging.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class UserDAO extends DBContext {
 
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
-    /* ========== Đăng nhập (verify hash) ========== */
+    /* ================== Login (verify hash) ================== */
     public User login(String username, String rawPassword) {
         String sql = "SELECT * FROM users WHERE username = ?";
         try (PreparedStatement st = connection.prepareStatement(sql)) {
@@ -26,12 +28,121 @@ public class UserDAO extends DBContext {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi đăng nhập", e);
+            LOGGER.log(Level.SEVERE, "[login] Lỗi khi đăng nhập", e);
         }
         return null;
     }
 
-    /** Lấy danh sách user đủ cho dropdown */
+    /* ================== Tìm theo username ================== */
+    public User findByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            st.setString(1, username);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) return map(rs);
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[findByUsername] failed", e);
+        }
+        return null;
+    }
+
+    /* ================== Forgot password: đếm & khóa ================== */
+
+    /** reset_attempts = 0, reset_attempts_date = today */
+    public void resetForgotAttempts(int userId, java.sql.Date today) {
+        String sql = "UPDATE users SET reset_attempts = 0, reset_attempts_date = ? WHERE user_id = ?";
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            st.setDate(1, today);
+            st.setInt(2, userId);
+            st.executeUpdate();
+            commitIfNeeded();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[resetForgotAttempts] failed", e);
+        }
+    }
+
+    /** set reset_attempts=?, reset_attempts_date=today */
+    public void updateForgotAttempts(int userId, int attempts, java.sql.Date today) {
+        String sql = "UPDATE users SET reset_attempts = ?, reset_attempts_date = ? WHERE user_id = ?";
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            st.setInt(1, attempts);
+            st.setDate(2, today);
+            st.setInt(3, userId);
+            st.executeUpdate();
+            commitIfNeeded();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[updateForgotAttempts] failed", e);
+        }
+    }
+
+    /** khóa tới thời điểm until */
+    public void lockForgotUntil(int userId, java.sql.Timestamp until) {
+        String sql = "UPDATE users SET reset_locked_until = ? WHERE user_id = ?";
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            st.setTimestamp(1, until);
+            st.setInt(2, userId);
+            st.executeUpdate();
+            commitIfNeeded();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[lockForgotUntil] failed", e);
+        }
+    }
+
+    /** mở khóa + reset attempts (sau khi cấp mật khẩu tạm thành công) */
+    public void clearForgotLockAndAttempts(int userId, java.sql.Date today) {
+        String sql = """
+            UPDATE users
+               SET reset_locked_until = NULL,
+                   reset_attempts = 0,
+                   reset_attempts_date = ?
+             WHERE user_id = ?
+        """;
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            st.setDate(1, today);
+            st.setInt(2, userId);
+            st.executeUpdate();
+            commitIfNeeded();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[clearForgotLockAndAttempts] failed", e);
+        }
+    }
+
+    /* ================== Đổi/Reset mật khẩu ================== */
+
+    /** cập nhật password (hash sẵn) + must_change_password */
+    public void updatePasswordAndForceChange(int userId, String storedHash, boolean mustChange) {
+        String sql = "UPDATE users SET password = ?, must_change_password = ? WHERE user_id = ?";
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            st.setString(1, storedHash);
+            st.setInt(2, mustChange ? 1 : 0);
+            st.setInt(3, userId);
+            st.executeUpdate();
+            commitIfNeeded();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "[updatePasswordAndForceChange] failed", e);
+        }
+    }
+
+    /** Reset bằng raw password (hash qua MaHoa) + set must_change_password=1 */
+    public boolean resetPassword(int userId, String rawTempPassword) {
+        String sql = "UPDATE users SET password=?, must_change_password=1 WHERE user_id=?";
+        try (PreparedStatement st = connection.prepareStatement(sql)) {
+            String stored = MaHoa.createStoredPassword(rawTempPassword); // iterations:salt:hash
+            st.setString(1, stored);
+            st.setInt(2, userId);
+            int rows = st.executeUpdate();
+            commitIfNeeded();
+            return rows > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "[resetPassword] failed", e);
+            return false;
+        }
+    }
+
+    /* ================== CRUD & tiện ích khác ================== */
+
+    /** Lấy ds rút gọn cho dropdown */
     public List<User> listAll() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT user_id, username, full_name, email, role, created_at FROM users ORDER BY COALESCE(full_name, username)";
@@ -48,12 +159,11 @@ public class UserDAO extends DBContext {
                 list.add(u);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "listAll failed", e);
+            LOGGER.log(Level.SEVERE, "[listAll] failed", e);
         }
         return list;
     }
 
-    /* ========== Kiểm tra tồn tại username ========== */
     public User checkUserExist(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
         try (PreparedStatement st = connection.prepareStatement(sql)) {
@@ -62,12 +172,11 @@ public class UserDAO extends DBContext {
                 if (rs.next()) return map(rs);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi kiểm tra người dùng tồn tại", e);
+            LOGGER.log(Level.SEVERE, "[checkUserExist] failed", e);
         }
         return null;
     }
 
-    /* ========== Lấy danh sách user ========== */
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM users ORDER BY user_id DESC";
@@ -75,12 +184,11 @@ public class UserDAO extends DBContext {
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) list.add(map(rs));
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy danh sách người dùng", e);
+            LOGGER.log(Level.SEVERE, "[getAllUsers] failed", e);
         }
         return list;
     }
 
-    /* ========== INSERT: hash password trước khi lưu ========== */
     public boolean insertUser(User u) {
         String sql = """
             INSERT INTO users (username, password, email, full_name, role, created_at)
@@ -94,17 +202,14 @@ public class UserDAO extends DBContext {
             st.setString(4, u.getFullName());
             st.setInt(5, u.getRole());
             int rows = st.executeUpdate();
-            try {
-                if (connection != null && !connection.getAutoCommit()) connection.commit();
-            } catch (SQLException ignore) {}
+            commitIfNeeded();
             return rows > 0;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[insertUser] Lỗi khi thêm user", e);
+            LOGGER.log(Level.SEVERE, "[insertUser] failed", e);
             return false;
         }
     }
 
-    /* ========== UPDATE: KHÔNG đổi mật khẩu ========== */
     public boolean updateUserWithoutPassword(User u) {
         String sql = """
             UPDATE users
@@ -118,17 +223,14 @@ public class UserDAO extends DBContext {
             st.setInt(4, u.getRole());
             st.setInt(5, u.getUserId());
             int rows = st.executeUpdate();
-            try {
-                if (connection != null && !connection.getAutoCommit()) connection.commit();
-            } catch (SQLException ignore) {}
+            commitIfNeeded();
             return rows > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[updateUserWithoutPassword] Lỗi khi cập nhật user (no-pw)", e);
+            LOGGER.log(Level.SEVERE, "[updateUserWithoutPassword] failed", e);
             return false;
         }
     }
 
-    /* ========== SEARCH: theo id / full_name / username (LIKE) ========== */
     public List<User> search(Integer id, String nameKeyword, String usernameKeyword) {
         List<User> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT * FROM users WHERE 1=1 ");
@@ -153,30 +255,11 @@ public class UserDAO extends DBContext {
                 while (rs.next()) list.add(map(rs));
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[search] Lỗi khi tìm kiếm user", e);
+            LOGGER.log(Level.SEVERE, "[search] failed", e);
         }
         return list;
     }
 
-    /* ========== RESET PASSWORD (random đã mã hoá) ========== */
-    public boolean resetPassword(int userId, String rawTempPassword) {
-        String sql = "UPDATE users SET password=? WHERE user_id=?";
-        try (PreparedStatement st = connection.prepareStatement(sql)) {
-            String stored = MaHoa.createStoredPassword(rawTempPassword);
-            st.setString(1, stored);
-            st.setInt(2, userId);
-            int rows = st.executeUpdate();
-            try {
-                if (connection != null && !connection.getAutoCommit()) connection.commit();
-            } catch (SQLException ignore) {}
-            return rows > 0;
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "[resetPassword] Lỗi khi reset mật khẩu", e);
-            return false;
-        }
-    }
-
-    /* ========== GET/DELETE ========== */
     public User getUserById(int id) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         try (PreparedStatement st = connection.prepareStatement(sql)) {
@@ -185,7 +268,7 @@ public class UserDAO extends DBContext {
                 if (rs.next()) return map(rs);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi lấy user theo ID", e);
+            LOGGER.log(Level.SEVERE, "[getUserById] failed", e);
         }
         return null;
     }
@@ -196,26 +279,44 @@ public class UserDAO extends DBContext {
         try (PreparedStatement st = connection.prepareStatement(sql)) {
             st.setInt(1, id);
             int rows = st.executeUpdate();
-            try {
-                if (connection != null && !connection.getAutoCommit()) connection.commit();
-            } catch (SQLException ignore) {}
+            commitIfNeeded();
             return rows > 0;
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "[deleteUser] Lỗi khi xóa user", e);
+            LOGGER.log(Level.SEVERE, "[deleteUser] failed", e);
             return false;
         }
     }
 
-    /* ========== map() ========== */
+    /* ================== map() – đọc đầy đủ cột ================== */
     private User map(ResultSet rs) throws SQLException {
         User u = new User();
         u.setUserId(rs.getInt("user_id"));
         u.setUsername(rs.getString("username"));
-        u.setPassword(rs.getString("password")); // chuỗi hash stored
-        u.setEmail(rs.getString("email"));
-        u.setFullName(rs.getString("full_name"));
-        u.setRole(rs.getInt("role"));
+        u.setPassword(rs.getString("password")); // stored hash
+
+        // Info
+        try { u.setEmail(rs.getString("email")); } catch (SQLException ignore) {}
+        try { u.setFullName(rs.getString("full_name")); } catch (SQLException ignore) {}
+        try { u.setRole(rs.getInt("role")); } catch (SQLException ignore) {}
+        try { u.setPhone(rs.getString("phone")); } catch (SQLException ignore) {}
+
+        // Forgot flow fields
+        try { u.setMustChangePassword(rs.getInt("must_change_password")); } catch (SQLException ignore) {}
+        try { u.setResetAttempts(rs.getInt("reset_attempts")); } catch (SQLException ignore) {}
+        try { u.setResetAttemptsDate(rs.getDate("reset_attempts_date")); } catch (SQLException ignore) {}
+        try { u.setResetLockedUntil(rs.getTimestamp("reset_locked_until")); } catch (SQLException ignore) {}
+
+        // Audit
         try { u.setCreatedAt(rs.getTimestamp("created_at")); } catch (SQLException ignore) {}
+
         return u;
+    }
+
+    private void commitIfNeeded() {
+        try {
+            if (connection != null && !connection.getAutoCommit()) {
+                connection.commit();
+            }
+        } catch (SQLException ignore) {}
     }
 }

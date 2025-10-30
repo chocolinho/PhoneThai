@@ -7,10 +7,12 @@
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
-        <title><c:out value="${empty order ? 'Tạo đơn hàng' : 'Sửa đơn hàng #'}"/><c:out value="${empty order ? '' : order.orderId}"/></title>
+        <title>
+            <c:out value="${empty order ? 'Tạo đơn hàng' : 'Sửa đơn hàng #'}"/><c:out value="${empty order ? '' : order.orderId}"/> | Admin PhoneThai
+        </title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="${ctx}/css/admin.css" rel="stylesheet">
+        <link href="../css/admin.css" rel="stylesheet" type="text/css"/>
     </head>
     <body class="admin-body">
 
@@ -28,6 +30,7 @@
 
             <div class="admin-main-content flex-grow-1">
                 <header class="admin-header">
+                    <%-- Để trống search bar trên trang form là hợp lý --%>
                     <div class="search-bar"></div>
                     <div class="d-flex align-items-center gap-2">
                         <img class="profile-avatar" src="${ctx}/images/profile.png" alt="">
@@ -62,10 +65,9 @@
                                                 <option value="${u.userId}" ${not empty order && order.userId==u.userId ? 'selected' : ''}>
                                                     <c:out value="${empty u.fullName ? u.username : u.fullName}"/>
                                                     <c:if test="${not empty u.email}"> — <c:out value="${u.email}"/></c:if>
-                                                    </option>
+                                                </option>
                                             </c:forEach>
                                         </select>
-
                                     </div>
 
                                     <div class="mb-3">
@@ -203,7 +205,6 @@
                 const btnAdd = document.getElementById('btnAddRow');
                 const sumQtyEl = document.getElementById('sumQty');
                 const sumTotalEl = document.getElementById('sumTotal');
-
                 function recalc() {
                     let total = 0, qty = 0;
                     tbody.querySelectorAll('tr').forEach(tr => {
@@ -246,7 +247,6 @@
                     clone.querySelector('.subtotal-input').value = 0;
                     tbody.appendChild(clone);
                 });
-
                 recalc();
             })();
         </script>

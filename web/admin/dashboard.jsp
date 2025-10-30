@@ -8,15 +8,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - PhoneThai</title>
+  <title>Tổng quan | Admin PhoneThai</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="${ctx}/css/admin.css" rel="stylesheet">
+  <link href="../css/admin.css" rel="stylesheet" type="text/css"/>
 </head>
 <body class="admin-body">
 
 <div class="d-flex">
-  <!-- Sidebar -->
   <nav class="admin-sidebar">
     <a href="${ctx}/" class="sidebar-brand">PhoneThai</a>
     <ul class="nav flex-column mt-3">
@@ -27,7 +26,6 @@
         <a class="nav-link" href="${ctx}/admin/users">Quản lý User</a>
       </li>
       <li class="nav-item">
-        <!-- Đảm bảo route này khớp mapping của ProductController -->
         <a class="nav-link" href="${ctx}/admin/products">Quản lý Sản phẩm</a>
       </li>
       <li class="nav-item">
@@ -37,14 +35,12 @@
     <a href="${ctx}/logout" class="nav-link logout-link mt-auto">Đăng xuất</a>
   </nav>
 
-  <!-- Main -->
   <div class="admin-main-content flex-grow-1">
-    <!-- Header -->
     <header class="admin-header">
       <div class="search-bar">
         <form method="get" action="${ctx}/admin/search" class="w-100 d-flex align-items-center gap-2">
           <span class="text-muted small">Tìm:</span>
-          <input type="text" name="q" class="form-control" placeholder="người dùng, đơn hàng, sản phẩm...">
+          <input type="text" name="q" class="form-control search-input search-input--text" placeholder="người dùng, đơn hàng, sản phẩm...">
         </form>
       </div>
       <div class="d-flex align-items-center gap-2">
@@ -61,7 +57,6 @@
     <main>
       <h1 class="h4 mb-3">Tổng quan</h1>
 
-      <!-- KPIs -->
       <div class="row g-3">
         <div class="col-6 col-md-3">
           <div class="stat-card">
@@ -110,7 +105,6 @@
         </div>
       </div>
 
-      <!-- Bảng đơn hàng gần đây -->
       <div class="admin-card mt-3">
         <div class="card-header">Đơn hàng gần đây</div>
         <div class="admin-table card-body p-0">
@@ -127,14 +121,11 @@
             <tbody>
             <c:forEach items="${requestScope.recentOrders}" var="o">
               <tr>
-                <!-- Link sang trang sửa đơn cho nhanh -->
                 <td>
                   <a href="${ctx}/admin/orders?action=edit&id=${o.orderId}" class="text-decoration-none">
                     ${o.orderId}
                   </a>
                 </td>
-
-                <!-- Tên khách: ưu tiên fullName/email nếu đã join; fallback: User #userId -->
                 <td class="text-truncate">
                   <div class="fw-medium">
                     <c:choose>
@@ -156,12 +147,9 @@
                 </td>
 
                 <td>
+                  <%-- --- REFINEMENT: Sử dụng badge-status --- --%>
                   <c:set var="s" value="${o.status}" />
-                  <span class="badge
-                    ${s=='pending'?'bg-secondary':
-                      (s=='processing'?'bg-info':
-                      (s=='shipped'?'bg-primary':
-                      (s=='completed'?'bg-success':'bg-danger')))}">
+                  <span class="badge-status ${s}">
                     <c:choose>
                       <c:when test="${s=='pending'}">Chờ xử lý</c:when>
                       <c:when test="${s=='processing'}">Đang xử lý</c:when>

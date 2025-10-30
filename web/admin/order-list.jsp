@@ -7,15 +7,15 @@
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
-        <title>Quản lý Đơn hàng</title>
+        <title>Quản lý Đơn hàng | Admin PhoneThai</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="${ctx}/css/admin.css" rel="stylesheet">
+        <link href="../css/admin.css" rel="stylesheet" type="text/css"/>
     </head>
     <body class="admin-body">
 
         <div class="d-flex">
-            <!-- Sidebar -->
+        
             <nav class="admin-sidebar">
                 <a href="${ctx}/" class="sidebar-brand">PhoneThai</a>
                 <ul class="nav flex-column mt-3">
@@ -27,14 +27,12 @@
                 <a href="${ctx}/logout" class="nav-link logout-link mt-auto">Đăng xuất</a>
             </nav>
 
-            <!-- Main -->
             <div class="admin-main-content flex-grow-1">
-                <!-- Header -->
                 <header class="admin-header">
                     <div class="search-bar">
                         <form method="get" action="${ctx}/admin/orders" class="w-100 d-flex align-items-center gap-2">
                             <span class="text-muted small">Tìm:</span>
-                            <input type="text" name="q" value="${param.q}" class="form-control" placeholder="mã đơn / họ tên / email...">
+                            <input type="text" name="q" value="${param.q}" class="form-control search-input search-input--text" placeholder="mã đơn / họ tên / email...">
                             <select name="status" class="form-select" style="max-width:180px">
                                 <option value="">Tất cả trạng thái</option>
                                 <c:set var="st" value="${param.status}" />
@@ -50,7 +48,7 @@
                                     </option>
                                 </c:forEach>
                             </select>
-                            <button class="btn btn-outline-secondary btn-sm">Lọc</button>
+                            <button class="btn btn-primary search-btn" type="submit">Lọc</button>
                         </form>
                     </div>
                     <div class="d-flex align-items-center gap-2">
@@ -62,7 +60,6 @@
                     </div>
                 </header>
 
-                <!-- Content -->
                 <main>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h1 class="h4 mb-0">Đơn hàng</h1>
@@ -86,10 +83,8 @@
                                 <tbody>
                                     <c:forEach items="${requestScope.list}" var="o">
                                         <tr>
-                                            <!-- #Đơn -->
                                             <td>${o.orderId}</td>
 
-                                            <!-- Khách hàng -->
                                             <td class="text-truncate">
                                                 <div class="fw-medium">
                                                     <c:choose>
@@ -106,36 +101,28 @@
                                                 </c:if>
                                             </td>
 
-                                            <!-- SL -->
                                             <td class="text-end">${o.quantity}</td>
 
-                                            <!-- Tổng (₫) -->
                                             <td class="text-end">
                                                 <fmt:formatNumber value="${o.total}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                             </td>
 
-                                            <!-- Trạng thái -->
                                             <td>
+                                                <%-- --- REFINEMENT: Sử dụng badge-status --- --%>
                                                 <c:set var="s" value="${o.status}"/>
-                                                <span class="badge
-                                                      ${s=='pending'?'bg-secondary':
-                                                        (s=='processing'?'bg-info':
-                                                        (s=='shipped'?'bg-primary':
-                                                        (s=='completed'?'bg-success':'bg-danger')))}">
-                                                      <c:choose>
-                                                          <c:when test="${s=='pending'}">Chờ xử lý</c:when>
-                                                          <c:when test="${s=='processing'}">Đang xử lý</c:when>
-                                                          <c:when test="${s=='shipped'}">Đã gửi</c:when>
-                                                          <c:when test="${s=='completed'}">Hoàn thành</c:when>
-                                                          <c:otherwise>Đã huỷ</c:otherwise>
-                                                      </c:choose>
+                                                <span class="badge-status ${s}">
+                                                    <c:choose>
+                                                        <c:when test="${s=='pending'}">Chờ xử lý</c:when>
+                                                        <c:when test="${s=='processing'}">Đang xử lý</c:when>
+                                                        <c:when test="${s=='shipped'}">Đã gửi</c:when>
+                                                        <c:when test="${s=='completed'}">Hoàn thành</c:when>
+                                                        <c:otherwise>Đã huỷ</c:otherwise>
+                                                    </c:choose>
                                                 </span>
                                             </td>
 
-                                            <!-- Ngày tạo -->
                                             <td><fmt:formatDate value="${o.orderDate}" pattern="dd/MM/yyyy HH:mm"/></td>
 
-                                            <!-- Thao tác -->
                                             <td class="text-end">
                                                 <a class="btn btn-sm btn-outline-secondary"
                                                    href="${ctx}/admin/orders?action=edit&id=${o.orderId}">Sửa</a>
@@ -150,11 +137,9 @@
                                     </c:forEach>
 
                                     <c:if test="${empty requestScope.list}">
-                                        <!-- bảng ĐƠN HÀNG có 7 cột → colspan=7 -->
                                         <tr><td colspan="7" class="text-center text-muted py-4">Chưa có đơn hàng</td></tr>
                                     </c:if>
                                 </tbody>
-
                             </table>
                         </div>
                     </div>

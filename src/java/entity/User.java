@@ -1,5 +1,6 @@
 package entity;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 public class User {
@@ -9,10 +10,18 @@ public class User {
     private String email;
     private String fullName;
     private int role;
-    private Timestamp createdAt; // đổi sang java.sql.Timestamp
+    private Timestamp createdAt;          // thời điểm tạo
+
+    // ====== Bổ sung cho luồng Forgot/Change Password ======
+    private String phone;                 // SĐT đăng ký (nếu dùng)
+    private int mustChangePassword;       // 1 = bắt buộc đổi PW sau khi login bằng PW tạm
+    private Integer resetAttempts;        // số lần bấm "quên mật khẩu" trong ngày
+    private Date resetAttemptsDate;       // ngày đang đếm attempts
+    private Timestamp resetLockedUntil;   // khoá tự phục vụ đến thời điểm này
 
     public User() {}
 
+    // Giữ nguyên constructor cũ để không phá code
     public User(int userId, String username, String password, String email,
                 String fullName, int role, Timestamp createdAt) {
         this.userId = userId;
@@ -24,6 +33,20 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    // Constructor đầy đủ (tuỳ bạn có cần dùng hay không)
+    public User(int userId, String username, String password, String email,
+                String fullName, int role, Timestamp createdAt,
+                String phone, int mustChangePassword, Integer resetAttempts,
+                Date resetAttemptsDate, Timestamp resetLockedUntil) {
+        this(userId, username, password, email, fullName, role, createdAt);
+        this.phone = phone;
+        this.mustChangePassword = mustChangePassword;
+        this.resetAttempts = resetAttempts;
+        this.resetAttemptsDate = resetAttemptsDate;
+        this.resetLockedUntil = resetLockedUntil;
+    }
+
+    // ===== Getters/Setters cơ bản =====
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
 
@@ -44,4 +67,20 @@ public class User {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    // ===== Getters/Setters bổ sung =====
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public int getMustChangePassword() { return mustChangePassword; }
+    public void setMustChangePassword(int mustChangePassword) { this.mustChangePassword = mustChangePassword; }
+
+    public Integer getResetAttempts() { return resetAttempts; }
+    public void setResetAttempts(Integer resetAttempts) { this.resetAttempts = resetAttempts; }
+
+    public Date getResetAttemptsDate() { return resetAttemptsDate; }
+    public void setResetAttemptsDate(Date resetAttemptsDate) { this.resetAttemptsDate = resetAttemptsDate; }
+
+    public Timestamp getResetLockedUntil() { return resetLockedUntil; }
+    public void setResetLockedUntil(Timestamp resetLockedUntil) { this.resetLockedUntil = resetLockedUntil; }
 }

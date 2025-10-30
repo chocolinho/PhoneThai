@@ -8,15 +8,14 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Quản lý Người dùng</title>
+  <title>Quản lý Người dùng | Admin PhoneThai</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="${ctx}/css/admin.css" rel="stylesheet">
+  <link href="../css/admin.css" rel="stylesheet" type="text/css"/>
 </head>
 <body class="admin-body">
 
 <div class="d-flex">
-  <!-- Sidebar -->
   <nav class="admin-sidebar">
     <a href="${ctx}/" class="sidebar-brand">PhoneThai</a>
     <ul class="nav flex-column mt-3">
@@ -28,34 +27,30 @@
     <a href="${ctx}/logout" class="nav-link logout-link mt-auto">Đăng xuất</a>
   </nav>
 
-  <!-- Main -->
   <div class="admin-main-content flex-grow-1">
-    <!-- Header -->
     <header class="admin-header">
       <div class="search-bar">
         <form method="get" action="${ctx}/admin/users" class="w-100 d-flex align-items-center gap-2">
           <input type="hidden" name="action" value="list"/>
           <span class="text-muted small">Tìm:</span>
 
-          <!-- ID -->
           <input type="number"
                  name="uid"
                  value="${param.uid}"
                  class="form-control search-input search-input--id"
                  placeholder="ID">
 
-          <!-- Họ tên -->
           <input type="text"
                  name="q"
                  value="${param.q}"
                  class="form-control search-input search-input--text"
                  placeholder="Họ tên...">
 
-          <!-- Username -->
+          <%-- --- REFINEMENT: Thêm class icon 'search-input--user' --- --%>
           <input type="text"
                  name="login"
                  value="${param.login}"
-                 class="form-control search-input"
+                 class="form-control search-input search-input--user"
                  placeholder="Username...">
 
           <div class="search-actions d-flex align-items-center gap-2">
@@ -74,7 +69,6 @@
       </div>
     </header>
 
-    <!-- Flash mật khẩu tạm sau khi reset (hiện 1 lần) -->
     <c:if test="${not empty sessionScope.flash_pw}">
       <div class="alert alert-warning d-flex align-items-center" role="alert">
         <div class="me-2">🔐</div>
@@ -83,7 +77,6 @@
       <c:remove var="flash_pw" scope="session"/>
     </c:if>
 
-    <!-- Content -->
     <main>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h4 mb-0">Người dùng</h1>
@@ -120,7 +113,8 @@
                   </td>
 
                   <td>
-                    <span class="badge-role ${u.role == 1 ? 'admin' : 'user'}">
+                    <%-- --- REFINEMENT: Sử dụng badge-base và badge-role --- --%>
+                    <span class="badge-base badge-role ${u.role == 1 ? 'admin' : 'user'}">
                       ${u.role == 1 ? 'Admin' : 'User'}
                     </span>
                   </td>
@@ -160,7 +154,6 @@
         </div>
       </div>
 
-      <!-- Phân trang (tuỳ Controller truyền vào) -->
       <c:if test="${not empty requestScope.pageCount}">
         <nav class="mt-3">
           <ul class="pagination pagination-sm mb-0">

@@ -9,15 +9,15 @@
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
-        <title>Quản lý Sản phẩm</title>
+        <title>Quản lý Sản phẩm | Admin PhoneThai</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="${ctx}/css/admin.css" rel="stylesheet">
+        <link href="../css/admin.css" rel="stylesheet" type="text/css"/>
     </head>
     <body class="admin-body">
 
         <div class="d-flex">
-            <!-- Sidebar -->
+    
             <nav class="admin-sidebar">
                 <a href="${ctx}/" class="sidebar-brand">PhoneThai</a>
                 <ul class="nav flex-column mt-3">
@@ -29,9 +29,7 @@
                 <a href="${ctx}/logout" class="nav-link logout-link mt-auto">Đăng xuất</a>
             </nav>
 
-            <!-- Main -->
             <div class="admin-main-content flex-grow-1">
-                <!-- Header -->
                 <header class="admin-header">
                     <div class="search-bar">
                         <form method="get" action="${ctx}/admin/products" class="w-100 d-flex align-items-center gap-2">
@@ -63,7 +61,6 @@
                     </div>
                 </header>
 
-                <!-- Content -->
                 <main>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h1 class="h4 mb-0">Sản phẩm</h1>
@@ -129,7 +126,6 @@
                         </div>
                     </div>
 
-                    <!-- Phân trang (tuỳ Controller truyền vào) -->
                     <c:if test="${not empty requestScope.pageCount}">
                         <nav class="mt-3">
                             <ul class="pagination pagination-sm mb-0">
@@ -139,7 +135,6 @@
                                            href="${ctx}/admin/products?page=${pno}&q=${fn:escapeXml(param.q)}&pid=${fn:escapeXml(param.pid)}">
                                             ${pno}
                                         </a>
-
                                     </li>
                                 </c:forEach>
                             </ul>
@@ -151,4 +146,4 @@
         </div>
 
     </body>
-</html> 
+</html>
