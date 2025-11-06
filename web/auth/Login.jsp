@@ -92,6 +92,7 @@
         </c:if>
 
         <form action="${ctx}/login" method="post">
+          <input type="hidden" name="redirect" value="${param.redirect}" />
           <div class="group">
             <label for="username">Tên đăng nhập</label>
             <input class="input" type="text" id="username" name="username" value="${cookie.userC.value}" required/>

@@ -1,5 +1,6 @@
 package controller;
 
+import dao.CartDAO;
 import dao.UserDAO;
 import entity.User;
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class LoginController extends HttpServlet {
         String username = request.getParameter("username");
         String pass = request.getParameter("password");
         String remember = request.getParameter("remember");
+        String redirect = request.getParameter("redirect");
 
         UserDAO dao = new UserDAO();
         User user = dao.login(username, pass);
@@ -40,6 +42,10 @@ public class LoginController extends HttpServlet {
         } else {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
+
+            CartDAO cartDAO = new CartDAO();
+            int cartCount = cartDAO.countQuantityByUser(user.getUserId());
+            session.setAttribute("cartCount", cartCount);
 
             // ✅ Cookie "Remember me"
             Cookie userCookie = new Cookie("userC", username);
@@ -62,8 +68,23 @@ public class LoginController extends HttpServlet {
             if (user.getRole() == 1) {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             } else {
-                response.sendRedirect(request.getContextPath() + "/");
+                String next = sanitizeRedirect(redirect);
+                response.sendRedirect(request.getContextPath() + next);
             }
         }
+    }
+
+    private String sanitizeRedirect(String redirect) {
+        if (redirect == null || redirect.isBlank()) {
+            return "/";
+        }
+        String trimmed = redirect.trim();
+        if (trimmed.contains("://")) {
+            return "/";
+        }
+        if (!trimmed.startsWith("/")) {
+            trimmed = "/" + trimmed;
+        }
+        return trimmed;
     }
 }

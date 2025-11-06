@@ -302,10 +302,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const id = btn.dataset.id;
 
       try {
+        const payload = new URLSearchParams({id, quantity: 1});
         const res = await fetch('${ctx}/cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'id=' + encodeURIComponent(id)
+          body: payload.toString()
         });
 
         const data = await res.json();
