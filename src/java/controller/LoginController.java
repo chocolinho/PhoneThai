@@ -1,5 +1,6 @@
 package controller;
 
+import dao.CartDAO;
 import dao.UserDAO;
 import entity.User;
 import java.io.IOException;
@@ -40,6 +41,10 @@ public class LoginController extends HttpServlet {
         } else {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
+
+            CartDAO cartDAO = new CartDAO();
+            int cartCount = cartDAO.countQuantityByUser(user.getUserId());
+            session.setAttribute("cartCount", cartCount);
 
             // ✅ Cookie "Remember me"
             Cookie userCookie = new Cookie("userC", username);

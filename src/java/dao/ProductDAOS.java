@@ -118,41 +118,93 @@ public class ProductDAOS extends DBContext {
     }
     
     // ProductDAOS.java
-public List<Product> search(String nameKeyword, Integer id) {
-    List<Product> list = new ArrayList<>();
-    StringBuilder sql = new StringBuilder("""
+    public List<Product> search(String nameKeyword, Integer id) {
+        List<Product> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("""
         SELECT product_id, name, description, price, old_price, rating, brand,
                stock, category, image, created_at
         FROM products
         WHERE 1=1
     """);
-    List<Object> params = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
 
-    if (id != null) {
-        sql.append(" AND product_id = ? ");
-        params.add(id);
-    }
-    if (nameKeyword != null && !nameKeyword.isBlank()) {
-        sql.append(" AND name LIKE ? ");
-        params.add("%" + nameKeyword.trim() + "%");
-    }
-
-    sql.append(" ORDER BY created_at DESC, product_id DESC ");
-
-    try (PreparedStatement st = connection.prepareStatement(sql.toString())) {
-        int idx = 1;
-        for (Object v : params) {
-            if (v instanceof Integer) st.setInt(idx++, (Integer) v);
-            else st.setString(idx++, String.valueOf(v));
+        if (id != null) {
+            sql.append(" AND product_id = ? ");
+            params.add(id);
         }
-        try (ResultSet rs = st.executeQuery()) {
-            while (rs.next()) list.add(map(rs));
+        if (nameKeyword != null && !nameKeyword.isBlank()) {
+            sql.append(" AND name LIKE ? ");
+            params.add("%" + nameKeyword.trim() + "%");
         }
-    } catch (SQLException ex) {
-        LOGGER.log(Level.SEVERE, "search failed", ex);
+
+        sql.append(" ORDER BY created_at DESC, product_id DESC ");
+
+        try (PreparedStatement st = connection.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object v : params) {
+                if (v instanceof Integer) st.setInt(idx++, (Integer) v);
+                else st.setString(idx++, String.valueOf(v));
+            }
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) list.add(map(rs));
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "search failed", ex);
+        }
+        return list;
     }
-    return list;
-}
+
+
+    public List<Product> search(String nameKeyword, Integer id, String category) {
+        List<Product> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("""
+        SELECT product_id, name, description, price, old_price, rating, brand,
+               stock, category, image, created_at
+        FROM products
+        WHERE 1=1
+    """);
+        List<Object> params = new ArrayList<>();
+
+        if (id != null) {
+            sql.append(" AND product_id = ? ");
+            params.add(id);
+        }
+        if (nameKeyword != null && !nameKeyword.isBlank()) {
+            sql.append(" AND name LIKE ? ");
+            params.add("%" + nameKeyword.trim() + "%");
+        }
+        if (category != null && !category.isBlank()) {
+            sql.append(" AND category = ? ");
+            params.add(category.trim());
+        }
+
+        sql.append(" ORDER BY created_at DESC, product_id DESC ");
+
+        try (PreparedStatement st = connection.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object v : params) {
+                if (v instanceof Integer) st.setInt(idx++, (Integer) v);
+                else st.setString(idx++, String.valueOf(v));
+            }
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) list.add(map(rs));
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "search with category failed", ex);
+        }
+        return list;
+    }
+
+
+    public List<Product> getProductsByCategory(String category) {
+        return search(null, null, category);
+    }
+
+
+    public List<Product> getProductsByCategoryAndKeyword(String category, String keyword) {
+        return search(keyword, null, category);
+    }
+
 
 
     /* alias */
@@ -247,6 +299,18 @@ public List<Product> search(String nameKeyword, Integer id) {
             LOGGER.log(Level.SEVERE, "getAllBrands failed", ex);
         }
         return brands;
+    }
+
+    public List<String> getAllCategories() {
+        List<String> categories = new ArrayList<>();
+        String sql = "SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category <> '' ORDER BY category";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) categories.add(rs.getString("category"));
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "getAllCategories failed", ex);
+        }
+        return categories;
     }
 
     /* ===================== TEST ===================== */

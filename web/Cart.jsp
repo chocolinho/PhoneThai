@@ -17,7 +17,13 @@
 <div class="container py-5">
   <h1 class="h3 mb-4 text-center fw-bold">Giỏ hàng của bạn</h1>
 
-  <c:if test="${empty cartItems}">
+  <c:if test="${mustLogin}">
+    <div class="alert alert-warning text-center" role="alert">
+      Vui lòng <a href="${ctx}/auth/Login.jsp" class="alert-link">đăng nhập</a> để xem giỏ hàng của bạn.
+    </div>
+  </c:if>
+
+  <c:if test="${not mustLogin && empty cartItems}">
     <div class="text-center text-muted py-5">
       <p>Giỏ hàng của bạn đang trống.</p>
       <a href="${ctx}/" class="btn btn-primary">Tiếp tục mua sắm</a>
@@ -36,21 +42,20 @@
           </tr>
         </thead>
         <tbody>
-        <c:forEach var="p" items="${cartItems}">
+        <c:forEach var="item" items="${cartItems}">
           <tr>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <img src="${ctx}/images/${p.image}" width="60" height="60" style="object-fit:cover;border-radius:8px;">
+                <img src="${ctx}/images/${item.image}" width="60" height="60" style="object-fit:cover;border-radius:8px;">
                 <div>
-                  <div class="fw-semibold">${p.name}</div>
-                  <small class="text-muted">${p.brand}</small>
+                  <div class="fw-semibold">${item.productName}</div>
                 </div>
               </div>
             </td>
-            <td class="text-center">${p.stock}</td>
-            <td class="text-end"><fmt:formatNumber value="${p.price}" type="number" groupingUsed="true"/> ₫</td>
+            <td class="text-center">${item.quantity}</td>
+            <td class="text-end"><fmt:formatNumber value="${item.price}" type="number" groupingUsed="true"/> ₫</td>
             <td class="text-end text-danger fw-bold">
-              <fmt:formatNumber value="${p.price * p.stock}" type="number" groupingUsed="true"/> ₫
+              <fmt:formatNumber value="${item.subtotal}" type="number" groupingUsed="true"/> ₫
             </td>
           </tr>
         </c:forEach>
