@@ -93,16 +93,22 @@ public class CartDAO extends DBContext {
         return 0;
     }
 
-    public void updateQuantity(int userId, int productId, int quantity) {
+    public boolean setQuantity(int userId, int productId, int quantity) {
+        if (quantity <= 0) {
+            removeItem(userId, productId);
+            return true;
+        }
+
         String sql = "UPDATE cart SET soluong = ? WHERE user_id = ? AND product_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, quantity);
             ps.setInt(2, userId);
             ps.setInt(3, productId);
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
         } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "updateQuantity failed", ex);
+            LOGGER.log(Level.SEVERE, "setQuantity failed", ex);
         }
+        return false;
     }
 
     public void removeItem(int userId, int productId) {

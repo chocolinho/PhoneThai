@@ -50,15 +50,39 @@ public class CartController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        response.setContentType("application/json;charset=UTF-8");
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        HttpSession session = request.getSession(false);
+        User user = session == null ? null : (User) session.getAttribute("user");
 
-        // bắt buộc đăng nhập
         if (user == null) {
-            response.getWriter().write("{\"error\":\"Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng!\"}");
+            String wantsJson = request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json");
+            if ("XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) || wantsJson) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"error\":\"Bạn cần đăng nhập để thực hiện thao tác này!\"}");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/auth/Login.jsp?redirect=cart");
+            }
             return;
         }
+
+        String action = request.getParameter("action");
+        if (action == null || action.isBlank() || "add".equals(action)) {
+            handleAddToCart(request, response, session, user);
+            return;
+        }
+
+        switch (action) {
+            case "update" -> handleUpdateQuantity(request, response, session, user);
+            case "remove" -> handleRemove(request, response, session, user);
+            default -> {
+                response.sendRedirect(request.getContextPath() + "/cart");
+            }
+        }
+    }
+
+    private void handleAddToCart(HttpServletRequest request, HttpServletResponse response,
+                                 HttpSession session, User user) throws IOException {
+
+        response.setContentType("application/json;charset=UTF-8");
 
         int pid;
         try {
@@ -67,6 +91,7 @@ public class CartController extends HttpServlet {
             response.getWriter().write("{\"error\":\"Mã sản phẩm không hợp lệ!\"}");
             return;
         }
+
         int quantity = 1;
         String quantityParam = request.getParameter("quantity");
         if (quantityParam != null) {
@@ -85,13 +110,54 @@ public class CartController extends HttpServlet {
         }
 
         cartDAO.addOrIncrement(user.getUserId(), p, quantity);
-
-        // ✅ tổng số lượng (không phải số mặt hàng)
         int totalQty = cartDAO.countQuantityByUser(user.getUserId());
         session.setAttribute("cartCount", totalQty);
-
-        // trả về tổng quantity để JS cập nhật badge
         response.getWriter().write("{\"count\":" + totalQty + "}");
+    }
+
+    private void handleUpdateQuantity(HttpServletRequest request, HttpServletResponse response,
+                                      HttpSession session, User user) throws IOException {
+
+        int pid = parseProductId(request);
+        if (pid == -1) {
+            response.sendRedirect(request.getContextPath() + "/cart");
+            return;
+        }
+
+        int quantity = 1;
+        try {
+            quantity = Integer.parseInt(request.getParameter("quantity"));
+        } catch (NumberFormatException ignore) {
+        }
+
+        cartDAO.setQuantity(user.getUserId(), pid, quantity);
+        refreshCartCount(session, user);
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private void handleRemove(HttpServletRequest request, HttpServletResponse response,
+                               HttpSession session, User user) throws IOException {
+
+        int pid = parseProductId(request);
+        if (pid != -1) {
+            cartDAO.removeItem(user.getUserId(), pid);
+            refreshCartCount(session, user);
+        }
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private int parseProductId(HttpServletRequest request) {
+        try {
+            return Integer.parseInt(request.getParameter("id"));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private void refreshCartCount(HttpSession session, User user) {
+        if (session == null) return;
+        int totalQty = cartDAO.countQuantityByUser(user.getUserId());
+        session.setAttribute("cartCount", totalQty);
     }
 
     // (doGet để hiển thị trang giỏ hàng nên đặt ở servlet khác /cart/view

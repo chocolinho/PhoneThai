@@ -39,6 +39,7 @@
             <th class="text-center">Số lượng</th>
             <th class="text-end">Giá</th>
             <th class="text-end">Tổng</th>
+            <th class="text-end">Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -52,10 +53,39 @@
                 </div>
               </div>
             </td>
-            <td class="text-center">${item.quantity}</td>
+            <td class="text-center">
+              <div class="d-inline-flex align-items-center gap-2">
+                <form action="${ctx}/cart" method="post" class="d-inline">
+                  <input type="hidden" name="action" value="update" />
+                  <input type="hidden" name="id" value="${item.productId}" />
+                  <input type="hidden" name="quantity" value="${item.quantity - 1}" />
+                  <button class="btn btn-outline-secondary btn-sm" type="submit" title="Giảm 1">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                </form>
+                <span class="fw-semibold">${item.quantity}</span>
+                <form action="${ctx}/cart" method="post" class="d-inline">
+                  <input type="hidden" name="action" value="update" />
+                  <input type="hidden" name="id" value="${item.productId}" />
+                  <input type="hidden" name="quantity" value="${item.quantity + 1}" />
+                  <button class="btn btn-outline-secondary btn-sm" type="submit" title="Tăng 1">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
             <td class="text-end"><fmt:formatNumber value="${item.price}" type="number" groupingUsed="true"/> ₫</td>
             <td class="text-end text-danger fw-bold">
               <fmt:formatNumber value="${item.subtotal}" type="number" groupingUsed="true"/> ₫
+            </td>
+            <td class="text-end">
+              <form action="${ctx}/cart" method="post" class="d-inline">
+                <input type="hidden" name="action" value="remove" />
+                <input type="hidden" name="id" value="${item.productId}" />
+                <button class="btn btn-link text-danger p-0" type="submit" title="Xóa sản phẩm">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </form>
             </td>
           </tr>
         </c:forEach>

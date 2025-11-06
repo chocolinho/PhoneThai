@@ -32,7 +32,7 @@ public class CheckoutController extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/Login.jsp");
+            response.sendRedirect(request.getContextPath() + "/auth/Login.jsp?redirect=checkout");
             return;
         }
 
@@ -57,7 +57,7 @@ public class CheckoutController extends HttpServlet {
         HttpSession session = request.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/Login.jsp");
+            response.sendRedirect(request.getContextPath() + "/auth/Login.jsp?redirect=checkout");
             return;
         }
 
