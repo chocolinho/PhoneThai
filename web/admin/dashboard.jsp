@@ -9,6 +9,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tổng quan | Admin PhoneThai</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="../css/admin.css" rel="stylesheet" type="text/css"/>
@@ -36,13 +37,8 @@
   </nav>
 
   <div class="admin-main-content flex-grow-1">
-    <header class="admin-header">
-      <div class="search-bar">
-        <form method="get" action="${ctx}/admin/search" class="w-100 d-flex align-items-center gap-2">
-          <span class="text-muted small">Tìm:</span>
-          <input type="text" name="q" class="form-control search-input search-input--text" placeholder="người dùng, đơn hàng, sản phẩm...">
-        </form>
-      </div>
+    <!-- Header KHÔNG có ô tìm kiếm -->
+    <header class="admin-header d-flex justify-content-end align-items-center">
       <div class="d-flex align-items-center gap-2">
         <img class="profile-avatar" src="${ctx}/images/profile.png" alt="">
         <div>
@@ -60,7 +56,7 @@
       <div class="row g-3">
         <div class="col-6 col-md-3">
           <div class="stat-card">
-            <div class="icon">U</div>
+            <div class="icon icon--users"><i class="bi bi-people"></i></div>
             <div>
               <div class="stat-number">
                 <c:out value="${empty requestScope.totalUsers ? 0 : requestScope.totalUsers}"/>
@@ -71,7 +67,7 @@
         </div>
         <div class="col-6 col-md-3">
           <div class="stat-card">
-            <div class="icon">P</div>
+            <div class="icon icon--products"><i class="bi bi-box-seam"></i></div>
             <div>
               <div class="stat-number">
                 <c:out value="${empty requestScope.totalProducts ? 0 : requestScope.totalProducts}"/>
@@ -82,7 +78,7 @@
         </div>
         <div class="col-6 col-md-3">
           <div class="stat-card">
-            <div class="icon">O</div>
+            <div class="icon icon--orders"><i class="bi bi-bag-check"></i></div>
             <div>
               <div class="stat-number">
                 <c:out value="${empty requestScope.totalOrders ? 0 : requestScope.totalOrders}"/>
@@ -93,7 +89,8 @@
         </div>
         <div class="col-6 col-md-3">
           <div class="stat-card">
-            <div class="icon">₫</div>
+            <div class="icon icon--revenue"><i class="bi bi-cash-coin"></i></div>
+
             <div>
               <div class="stat-number">
                 <fmt:formatNumber value="${empty requestScope.totalRevenue ? 0 : requestScope.totalRevenue}"
@@ -129,25 +126,18 @@
                 <td class="text-truncate">
                   <div class="fw-medium">
                     <c:choose>
-                      <c:when test="${not empty o.userFullName}">
-                        <c:out value="${o.userFullName}"/>
-                      </c:when>
-                      <c:otherwise>
-                        User #${o.userId}
-                      </c:otherwise>
+                      <c:when test="${not empty o.userFullName}"><c:out value="${o.userFullName}"/></c:when>
+                      <c:otherwise>User #${o.userId}</c:otherwise>
                     </c:choose>
                   </div>
                   <c:if test="${not empty o.userEmail}">
                     <div class="text-muted small"><c:out value="${o.userEmail}"/></div>
                   </c:if>
                 </td>
-
                 <td class="text-end">
                   <fmt:formatNumber value="${o.total}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                 </td>
-
                 <td>
-                  <%-- --- REFINEMENT: Sử dụng badge-status --- --%>
                   <c:set var="s" value="${o.status}" />
                   <span class="badge-status ${s}">
                     <c:choose>
@@ -159,10 +149,7 @@
                     </c:choose>
                   </span>
                 </td>
-
-                <td>
-                  <fmt:formatDate value="${o.orderDate}" pattern="dd/MM/yyyy HH:mm"/>
-                </td>
+                <td><fmt:formatDate value="${o.orderDate}" pattern="dd/MM/yyyy HH:mm"/></td>
               </tr>
             </c:forEach>
 

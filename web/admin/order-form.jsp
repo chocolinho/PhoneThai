@@ -101,7 +101,7 @@
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span class="fw-medium">Tổng tiền</span>
-                                            <span id="sumTotal" class="fw-bold">₫0</span>
+                                            <span id="sumTotal" class="fw-bold">0₫</span>
                                         </div>
                                     </div>
                                 </div>

@@ -19,7 +19,7 @@ public class OrderDAO extends DBContext {
         o.setOrderId(rs.getInt("order_id"));
         o.setUserId(rs.getInt("user_id"));
         o.setQuantity(rs.getInt("quantity"));
-        o.setTotal(rs.getBigDecimal("total").doubleValue()); // giữ double cho đồng nhất ProductDAOS
+        o.setTotal(rs.getBigDecimal("total").doubleValue()); 
         Timestamp ts = rs.getTimestamp("order_date");
         if (ts != null) o.setOrderDate(ts);
         o.setStatus(rs.getString("status"));

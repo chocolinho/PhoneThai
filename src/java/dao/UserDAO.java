@@ -312,6 +312,56 @@ public class UserDAO extends DBContext {
         return u;
     }
 
+    /* ===== Profile / Update info ===== */
+public boolean updateProfileBasic(User u) {
+    String sql = "UPDATE users SET full_name=?, email=?, phone=? WHERE user_id=?";
+    try (PreparedStatement st = connection.prepareStatement(sql)) {
+        st.setString(1, u.getFullName());
+        st.setString(2, u.getEmail());
+        st.setString(3, u.getPhone());
+        st.setInt(4, u.getUserId());
+        int rows = st.executeUpdate();
+        commitIfNeeded();
+        return rows > 0;
+    } catch (SQLException e) {
+        LOGGER.log(Level.SEVERE, "[updateProfileBasic] failed", e);
+        return false;
+    }
+}
+
+/* ===== Password flow (dùng MaHoa) ===== */
+public boolean checkPasswordRaw(int userId, String rawPassword) {
+    String sql = "SELECT password FROM users WHERE user_id=?";
+    try (PreparedStatement st = connection.prepareStatement(sql)) {
+        st.setInt(1, userId);
+        try (ResultSet rs = st.executeQuery()) {
+            if (rs.next()) {
+                String stored = rs.getString("password"); // iterations:salt:hash
+                return MaHoa.verifyPassword(rawPassword, stored);
+            }
+        }
+    } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "[checkPasswordRaw] failed", e);
+    }
+    return false;
+}
+
+public boolean updatePasswordRaw(int userId, String newRawPassword) {
+    String sql = "UPDATE users SET password=?, must_change_password=0 WHERE user_id=?";
+    try (PreparedStatement st = connection.prepareStatement(sql)) {
+        String stored = MaHoa.createStoredPassword(newRawPassword);
+        st.setString(1, stored);
+        st.setInt(2, userId);
+        int rows = st.executeUpdate();
+        commitIfNeeded();
+        return rows > 0;
+    } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "[updatePasswordRaw] failed", e);
+        return false;
+    }
+}
+
+    
     private void commitIfNeeded() {
         try {
             if (connection != null && !connection.getAutoCommit()) {

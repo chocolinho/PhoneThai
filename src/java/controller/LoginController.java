@@ -58,7 +58,7 @@ public class LoginController extends HttpServlet {
             response.addCookie(userCookie);
             response.addCookie(passCookie);
 
-            // ✅ redirect chuẩn
+       
             if (user.getRole() == 1) {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             } else {

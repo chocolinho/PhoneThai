@@ -8,7 +8,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List; // <<-- ĐÃ THÊM IMPORT
+import java.util.List; 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
