@@ -34,10 +34,10 @@
       <nav class="col-6 col-md-2" aria-labelledby="ft-products">
         <h6 id="ft-products" class="mb-2">Sản phẩm</h6>
         <ul class="list-unstyled small mb-0">
-          <li><a href="${ctx}/products?brand=Apple">iPhone</a></li>
-          <li><a href="${ctx}/products?brand=Samsung">Samsung</a></li>
-          <li><a href="${ctx}/products?brand=Xiaomi">Xiaomi</a></li>
-          <li><a href="${ctx}/products?cat=accessory">Phụ kiện</a></li>
+          <li><a href="${ctx}/?brand=Apple">iPhone</a></li>
+          <li><a href="${ctx}/?brand=Samsung">Samsung</a></li>
+          <li><a href="${ctx}/?brand=Xiaomi">Xiaomi</a></li>
+          <li><a href="${ctx}/?cat=accessory">Phụ kiện</a></li>
         </ul>
       </nav>
 

@@ -32,19 +32,19 @@
                             <div class="col-12 col-md-6">
                                 <h6 class="mb-2 text-uppercase fw-bold text-danger">Điện thoại</h6>
                                 <ul class="list-unstyled mb-0">
-                                    <li><a class="item-link" href="${ctx}/products?cat=phone">Tất cả điện thoại</a></li>
+                                    <li><a class="item-link" href="${ctx}/?cat=phone">Tất cả điện thoại</a></li>
                                 </ul>
                             </div>
 
                             <div class="col-12 col-md-6">
                                 <h6 class="mb-2 text-uppercase fw-bold text-danger">Thương hiệu</h6>
                                 <ul class="list-unstyled mb-0">
-                                    <li><a class="item-link" href="${ctx}/products?brand=Apple">Apple</a></li>
-                                    <li><a class="item-link" href="${ctx}/products?brand=Samsung">Samsung</a></li>
-                                    <li><a class="item-link" href="${ctx}/products?brand=Xiaomi">Xiaomi</a></li>
-                                    <li><a class="item-link" href="${ctx}/products?brand=OPPO">OPPO</a></li>
-                                    <li><a class="item-link" href="${ctx}/products?brand=Sony">Sony</a></li>
-                                    <li><a class="item-link" href="${ctx}/products?brand=Nokia">Nokia</a></li>
+                                    <li><a class="item-link" href="${ctx}/?brand=Apple">Apple</a></li>
+                                    <li><a class="item-link" href="${ctx}/?brand=Samsung">Samsung</a></li>
+                                    <li><a class="item-link" href="${ctx}/?brand=Xiaomi">Xiaomi</a></li>
+                                    <li><a class="item-link" href="${ctx}/?brand=OPPO">OPPO</a></li>
+                                    <li><a class="item-link" href="${ctx}/?brand=Sony">Sony</a></li>
+                                    <li><a class="item-link" href="${ctx}/?brand=Nokia">Nokia</a></li>
                                 </ul>
                             </div>
 

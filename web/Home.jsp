@@ -115,6 +115,19 @@
             <div class="container">
                 <div class="text-center my-3 my-md-4">
                     <h2 class="cps-block-title">Featured Products</h2>
+                    <c:if test="${not empty selectedBrand || not empty selectedCategory}">
+                        <p class="text-muted mb-0">
+                            <c:if test="${not empty selectedBrand}">
+                                Thương hiệu: <strong>${selectedBrand}</strong>
+                            </c:if>
+                            <c:if test="${not empty selectedBrand && not empty selectedCategory}">
+                                <span class="mx-2">·</span>
+                            </c:if>
+                            <c:if test="${not empty selectedCategory}">
+                                Danh mục: <strong>${selectedCategory}</strong>
+                            </c:if>
+                        </p>
+                    </c:if>
                 </div>
             </div>
 
@@ -161,6 +174,13 @@
                             </article>
                         </div>
                     </c:forEach>
+                    <c:if test="${empty products}">
+                        <div class="col-12">
+                            <div class="alert alert-info text-center" role="status">
+                                Không tìm thấy sản phẩm phù hợp với bộ lọc bạn đã chọn.
+                            </div>
+                        </div>
+                    </c:if>
                 </div>
 
                 <!-- Nút xem thêm -->
