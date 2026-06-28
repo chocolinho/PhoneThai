@@ -20,7 +20,7 @@ public class ProfileController extends HttpServlet {
     private User requireLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(false);
         User u = (session == null) ? null : (User) session.getAttribute("user");
-        if (u == null) { resp.sendRedirect(req.getContextPath() + "/auth/login"); return null; }
+        if (u == null) { resp.sendRedirect(req.getContextPath() + "/login"); return null; }
         return u;
     }
 

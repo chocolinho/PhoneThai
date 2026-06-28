@@ -49,13 +49,15 @@ public class LoginController extends HttpServlet {
 
             // ✅ Cookie "Remember me"
             Cookie userCookie = new Cookie("userC", username);
-            Cookie passCookie = new Cookie("passC", pass);
+            Cookie passCookie = new Cookie("passC", "");
             userCookie.setPath("/");
             passCookie.setPath("/");
+            userCookie.setHttpOnly(true);
+            passCookie.setHttpOnly(true);
 
             if (remember != null) {
                 userCookie.setMaxAge(60 * 60 * 24 * 30);
-                passCookie.setMaxAge(60 * 60 * 24 * 30);
+                passCookie.setMaxAge(0);
             } else {
                 userCookie.setMaxAge(0);
                 passCookie.setMaxAge(0);

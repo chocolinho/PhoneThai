@@ -27,7 +27,7 @@ public class AddressesController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/auth/Login.jsp?redirect=addresses");
+            resp.sendRedirect(req.getContextPath() + "/login?redirect=addresses");
             return;
         }
 
@@ -60,7 +60,7 @@ public class AddressesController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/auth/Login.jsp?redirect=addresses");
+            resp.sendRedirect(req.getContextPath() + "/login?redirect=addresses");
             return;
         }
 

@@ -8,7 +8,10 @@ import entity.User;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ import java.util.List;
 @WebServlet(name = "CartController", urlPatterns = {"/cart"})
 public class CartController extends HttpServlet {
 
-    private final ProductDAOS pdao = new ProductDAOS();
+    private final ProductDAOS productDAO = new ProductDAOS();
     private final CartDAO cartDAO = new CartDAO();
 
     @Override
@@ -29,13 +32,12 @@ public class CartController extends HttpServlet {
 
         List<Cart> items = new ArrayList<>();
         double total = 0;
-
         request.setAttribute("mustLogin", false);
 
         if (user != null) {
             items = cartDAO.findByUser(user.getUserId());
-            for (Cart c : items) {
-                total += c.getSubtotal();
+            for (Cart item : items) {
+                total += item.getSubtotal();
             }
         } else {
             request.setAttribute("mustLogin", true);
@@ -54,12 +56,11 @@ public class CartController extends HttpServlet {
         User user = session == null ? null : (User) session.getAttribute("user");
 
         if (user == null) {
-            String wantsJson = request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json");
-            if ("XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) || wantsJson) {
+            if (isAjaxOrJson(request)) {
                 response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"error\":\"Bạn cần đăng nhập để thực hiện thao tác này!\"}");
+                response.getWriter().write("{\"error\":\"Ban can dang nhap de thuc hien thao tac nay!\"}");
             } else {
-                response.sendRedirect(request.getContextPath() + "/auth/Login.jsp?redirect=cart");
+                response.sendRedirect(request.getContextPath() + "/login?redirect=cart");
             }
             return;
         }
@@ -73,96 +74,77 @@ public class CartController extends HttpServlet {
         switch (action) {
             case "update" -> handleUpdateQuantity(request, response, session, user);
             case "remove" -> handleRemove(request, response, session, user);
-            default -> {
-                response.sendRedirect(request.getContextPath() + "/cart");
-            }
+            default -> response.sendRedirect(request.getContextPath() + "/cart");
         }
     }
 
     private void handleAddToCart(HttpServletRequest request, HttpServletResponse response,
-                                 HttpSession session, User user) throws IOException {
+            HttpSession session, User user) throws IOException {
 
         response.setContentType("application/json;charset=UTF-8");
 
-        int pid;
-        try {
-            pid = Integer.parseInt(request.getParameter("id"));
-        } catch (NumberFormatException e) {
-            response.getWriter().write("{\"error\":\"Mã sản phẩm không hợp lệ!\"}");
+        int productId = parsePositiveInt(request.getParameter("id"), -1);
+        if (productId == -1) {
+            response.getWriter().write("{\"error\":\"Ma san pham khong hop le!\"}");
             return;
         }
 
-        int quantity = 1;
-        String quantityParam = request.getParameter("quantity");
-        if (quantityParam != null) {
-            try {
-                quantity = Integer.parseInt(quantityParam);
-                if (quantity <= 0) quantity = 1;
-            } catch (NumberFormatException ignore) {
-                quantity = 1;
-            }
-        }
-
-        Product p = pdao.getProductByID(pid);
-        if (p == null) {
-            response.getWriter().write("{\"error\":\"Không tìm thấy sản phẩm!\"}");
+        int quantity = parsePositiveInt(request.getParameter("quantity"), 1);
+        Product product = productDAO.getProductByID(productId);
+        if (product == null) {
+            response.getWriter().write("{\"error\":\"Khong tim thay san pham!\"}");
             return;
         }
 
-        cartDAO.addOrIncrement(user.getUserId(), p, quantity);
-        int totalQty = cartDAO.countQuantityByUser(user.getUserId());
-        session.setAttribute("cartCount", totalQty);
-        response.getWriter().write("{\"count\":" + totalQty + "}");
+        cartDAO.addOrIncrement(user.getUserId(), product, quantity);
+        refreshCartCount(session, user);
+        response.getWriter().write("{\"count\":" + session.getAttribute("cartCount") + "}");
     }
 
     private void handleUpdateQuantity(HttpServletRequest request, HttpServletResponse response,
-                                      HttpSession session, User user) throws IOException {
+            HttpSession session, User user) throws IOException {
 
-        int pid = parseProductId(request);
-        if (pid == -1) {
-            response.sendRedirect(request.getContextPath() + "/cart");
-            return;
-        }
-
-        int quantity = 1;
-        try {
-            quantity = Integer.parseInt(request.getParameter("quantity"));
-        } catch (NumberFormatException ignore) {
-        }
-
-        cartDAO.setQuantity(user.getUserId(), pid, quantity);
-        refreshCartCount(session, user);
-        response.sendRedirect(request.getContextPath() + "/cart");
-    }
-
-    private void handleRemove(HttpServletRequest request, HttpServletResponse response,
-                               HttpSession session, User user) throws IOException {
-
-        int pid = parseProductId(request);
-        if (pid != -1) {
-            cartDAO.removeItem(user.getUserId(), pid);
+        int productId = parsePositiveInt(request.getParameter("id"), -1);
+        if (productId != -1) {
+            int quantity = parsePositiveInt(request.getParameter("quantity"), 1);
+            cartDAO.setQuantity(user.getUserId(), productId, quantity);
             refreshCartCount(session, user);
         }
         response.sendRedirect(request.getContextPath() + "/cart");
     }
 
-    private int parseProductId(HttpServletRequest request) {
+    private void handleRemove(HttpServletRequest request, HttpServletResponse response,
+            HttpSession session, User user) throws IOException {
+
+        int productId = parsePositiveInt(request.getParameter("id"), -1);
+        if (productId != -1) {
+            cartDAO.removeItem(user.getUserId(), productId);
+            refreshCartCount(session, user);
+        }
+        response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private boolean isAjaxOrJson(HttpServletRequest request) {
+        String accepts = request.getHeader("Accept");
+        boolean wantsJson = accepts != null && accepts.contains("application/json");
+        boolean ajaxRequest = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"));
+        return wantsJson || ajaxRequest;
+    }
+
+    private int parsePositiveInt(String value, int defaultValue) {
         try {
-            return Integer.parseInt(request.getParameter("id"));
-        } catch (NumberFormatException e) {
-            return -1;
+            int parsed = Integer.parseInt(value);
+            return parsed > 0 ? parsed : defaultValue;
+        } catch (NumberFormatException ex) {
+            return defaultValue;
         }
     }
 
     private void refreshCartCount(HttpSession session, User user) {
-        if (session == null) return;
-        int totalQty = cartDAO.countQuantityByUser(user.getUserId());
-        session.setAttribute("cartCount", totalQty);
+        if (session == null || user == null) {
+            return;
+        }
+        int totalQuantity = cartDAO.countQuantityByUser(user.getUserId());
+        session.setAttribute("cartCount", totalQuantity);
     }
-
-    // (doGet để hiển thị trang giỏ hàng nên đặt ở servlet khác /cart/view
-    // hoặc gộp vào servlet này nếu bạn không còn servlet /cart nào khác.)
 }
-
-
-

@@ -28,7 +28,7 @@ public class BillingController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/auth/Login.jsp?redirect=billing");
+            resp.sendRedirect(req.getContextPath() + "/login?redirect=billing");
             return;
         }
 
@@ -45,7 +45,7 @@ public class BillingController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/auth/Login.jsp?redirect=billing");
+            resp.sendRedirect(req.getContextPath() + "/login?redirect=billing");
             return;
         }
 

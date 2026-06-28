@@ -28,7 +28,7 @@ public class UserOrdersController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User user = session == null ? null : (User) session.getAttribute("user");
         if (user == null) {
-            resp.sendRedirect(req.getContextPath() + "/auth/Login.jsp?redirect=orders");
+            resp.sendRedirect(req.getContextPath() + "/login?redirect=orders");
             return;
         }
 
