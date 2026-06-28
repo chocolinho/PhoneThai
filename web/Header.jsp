@@ -1,6 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="c"  uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
 <!-- CSS & Icons -->
@@ -59,6 +59,7 @@
             <form class="cps-search d-none d-md-flex" action="${ctx}/search" method="get" role="search">
                 <i class="bi bi-search" aria-hidden="true"></i>
                 <input class="form-control" type="search" name="q"
+                       value="${fn:escapeXml(param.q)}"
                        placeholder="Bạn muốn mua gì hôm nay?" aria-label="Tìm kiếm">
                 <button class="btn btn-light ms-2 d-flex align-items-center gap-1" type="submit" title="Tìm kiếm">
                     <i class="bi bi-search"></i><span class="d-none d-lg-inline">Tìm</span>

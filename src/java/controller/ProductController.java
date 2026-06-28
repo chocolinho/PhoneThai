@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @MultipartConfig(maxFileSize = 10 * 1024 * 1024) // 10MB
 @WebServlet(name = "ProductController", urlPatterns = {"/admin/products"})
@@ -58,20 +59,22 @@ public class ProductController extends HttpServlet {
             }
             case "new" -> request.getRequestDispatcher("/admin/product-form.jsp").forward(request, response);
             default -> {
-                String q = request.getParameter("q");
-                Integer code = parseIntOrNull(request.getParameter("pid"));
+                String q = request.getParameter("q");                    // keyword theo tên
+            Integer code = parseIntOrNull(request.getParameter("pid")); // mã sản phẩm (pid)
 
-                List<Product> list;
-                if ((q != null && !q.isBlank()) || code != null) {
-                    list = productDAO.search(q, code);
-                } else {
-                    list = productDAO.getAllProducts();
-                }
+            List<Product> list;
+            if ((q != null && !q.isBlank()) || code != null) {
+                list = productDAO.search(q, code);
+            } else {
+                list = productDAO.getAllProducts();
+            }
 
-                request.setAttribute("q", q);
-                request.setAttribute("pid", code);
-                request.setAttribute("list", list);
-                request.getRequestDispatcher("/admin/product-list.jsp").forward(request, response);
+            // Để giữ lại giá trị trong ô search của JSP
+            request.setAttribute("q", q);
+            request.setAttribute("pid", code);
+
+            request.setAttribute("list", list);
+            request.getRequestDispatcher("/admin/product-list.jsp").forward(request, response);
             }
         }
     }
@@ -95,7 +98,7 @@ public class ProductController extends HttpServlet {
                 Integer stock = parseIntOrNull(request.getParameter("stock"));
                 String category = request.getParameter("category");
                 String brand = request.getParameter("brand");
-                String image = request.getParameter("image"); // existing image name
+                String image = request.getParameter("image"); // ảnh cũ
                 Double oldPrice = parseDoubleOrNull(request.getParameter("oldPrice"));
                 Double rating = parseDoubleOrNull(request.getParameter("rating"));
 
@@ -117,28 +120,40 @@ public class ProductController extends HttpServlet {
                     return;
                 }
 
-                // ── Handle image upload ──────────────────────────────────────
-                Part filePart = null;
-                try { filePart = request.getPart("imageFile"); } catch (Exception ignore) {}
+            
 
-                if (filePart != null && filePart.getSize() > 0) {
-                    // Keep only the filename (strip any path the browser may send)
-                    String original = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
-                    String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
+Part filePart = null;
+try { filePart = request.getPart("imageFile"); } catch (Exception ignore) {}
 
-                    // Save to the deployed /images folder inside Tomcat's webroot
-                    String uploadPath = getServletContext().getRealPath("/images");
-                    if (uploadPath == null) {
-                        uploadPath = System.getProperty("java.io.tmpdir") + File.separator + "images";
-                    }
-                    File uploadDir = new File(uploadPath);
-                    if (!uploadDir.exists()) uploadDir.mkdirs();
+if (filePart != null && filePart.getSize() > 0) {
+    String original = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+    String safeName = original.replaceAll("[^a-zA-Z0-9._-]", "_");
 
-                    filePart.write(new File(uploadDir, safeName).getAbsolutePath());
+    // 1) Đường dẫn khi CHẠY (Tomcat) -> build/web/images
+    String runtimePath = getServletContext().getRealPath("/images");
+    if (runtimePath == null) {
+        runtimePath = System.getProperty("java.io.tmpdir") + File.separator + "images";
+    }
+    File runtimeDir = new File(runtimePath);
+    if (!runtimeDir.exists()) runtimeDir.mkdirs();
 
-                    image = safeName; // store only the filename in DB
-                }
-                // ─────────────────────────────────────────────────────────────
+    // GHI LẦN DUY NHẤT vào thư mục runtime
+    File rtFile = new File(runtimeDir, safeName);
+    filePart.write(rtFile.getAbsolutePath());
+
+    // 2) COPY sang thư mục dự án (để bạn thấy file trong web/images khi phát triển)
+    File devDir = new File("C:\\Users\\DinhThai\\OneDrive\\Documents\\NetBeansProjects\\PhoneThai\\web\\images");
+    if (!devDir.exists()) devDir.mkdirs();
+    java.nio.file.Files.copy(
+            rtFile.toPath(),
+            new File(devDir, safeName).toPath(),
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+    );
+
+    // 3) Lưu vào DB chỉ tên file (hoặc "images/..." tuỳ JSP bạn hiển thị)
+    image = safeName; // => JSP đang dùng ${ctx}/images/${p.image}
+}
+
 
                 Product p = new Product();
                 if (id != null) p.setProductId(id);

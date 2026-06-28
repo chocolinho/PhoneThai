@@ -1,5 +1,5 @@
 <%@page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="c" uri="jakarta.tags.core"%>
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
 <!DOCTYPE html>
@@ -92,6 +92,7 @@
         </c:if>
 
         <form action="${ctx}/login" method="post">
+          <input type="hidden" name="redirect" value="${param.redirect}" />
           <div class="group">
             <label for="username">Tên đăng nhập</label>
             <input class="input" type="text" id="username" name="username" value="${cookie.userC.value}" required/>
@@ -100,7 +101,7 @@
           <div class="group">
             <label for="password">Mật khẩu</label>
             <div class="input-wrap">
-              <input class="input" type="password" id="password" name="password" value="${cookie.passC.value}" required/>
+              <input class="input" type="password" id="password" name="password" required/>
               <button type="button" class="toggle" onclick="togglePw()">👁</button>
             </div>
           </div>

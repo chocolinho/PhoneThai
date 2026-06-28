@@ -1,13 +1,13 @@
 package controller;
 
-import context.MaHoa;
 import dao.UserDAO;
 import entity.User;
 
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
@@ -27,55 +27,48 @@ public class RegisterController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        String fullName = request.getParameter("full_name");
-        String username = request.getParameter("username");
-        String email = request.getParameter("email");
+        String fullName = safe(request.getParameter("full_name"));
+        String username = safe(request.getParameter("username"));
+        String email = safe(request.getParameter("email"));
         String password = request.getParameter("password");
         String confirm = request.getParameter("confirm");
 
-        // 🔸 Kiểm tra nhập lại mật khẩu
+        if (username.isBlank() || password == null || password.isBlank()) {
+            request.setAttribute("errorMessage", "Vui long nhap ten dang nhap va mat khau!");
+            request.getRequestDispatcher("/auth/Register.jsp").forward(request, response);
+            return;
+        }
+
         if (!password.equals(confirm)) {
-            request.setAttribute("errorMessage", "Mật khẩu nhập lại không khớp!");
+            request.setAttribute("errorMessage", "Mat khau nhap lai khong khop!");
             request.getRequestDispatcher("/auth/Register.jsp").forward(request, response);
             return;
         }
 
         UserDAO dao = new UserDAO();
-
-        // 🔸 Kiểm tra username đã tồn tại
         if (dao.checkUserExist(username) != null) {
-            request.setAttribute("errorMessage", "Tên đăng nhập đã tồn tại!");
+            request.setAttribute("errorMessage", "Ten dang nhap da ton tai!");
             request.getRequestDispatcher("/auth/Register.jsp").forward(request, response);
             return;
         }
 
-        try {
-            // 🔒 Mã hóa mật khẩu trước khi lưu
-            String hashed = MaHoa.createStoredPassword(password);
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setEmail(email);
+        user.setFullName(fullName);
+        user.setRole(0);
 
-            User u = new User();
-            u.setUsername(username);
-            u.setPassword(hashed);
-            u.setEmail(email);
-            u.setFullName(fullName);
-            u.setRole(0); // user thường
-
-            boolean ok = dao.insertUser(u);
-
-            if (ok) {
-                // ✅ Gửi thông báo đăng ký thành công
-                request.setAttribute("successMessage", "🎉 Đăng ký thành công! Bạn có thể đăng nhập ngay.");
-            } else {
-                request.setAttribute("errorMessage", "Đăng ký thất bại! Vui lòng thử lại.");
-            }
-
-            // Luôn quay lại cùng trang Register.jsp để hiển thị thông báo
-            request.getRequestDispatcher("/auth/Register.jsp").forward(request, response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("errorMessage", "Lỗi xử lý đăng ký: " + e.getMessage());
-            request.getRequestDispatcher("/auth/Register.jsp").forward(request, response);
+        boolean ok = dao.insertUser(user);
+        if (ok) {
+            request.setAttribute("successMessage", "Dang ky thanh cong! Ban co the dang nhap ngay.");
+        } else {
+            request.setAttribute("errorMessage", "Dang ky that bai! Vui long thu lai.");
         }
+        request.getRequestDispatcher("/auth/Register.jsp").forward(request, response);
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value.trim();
     }
 }

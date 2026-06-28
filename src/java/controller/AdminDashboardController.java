@@ -25,7 +25,7 @@ public class AdminDashboardController extends HttpServlet {
         HttpSession session = req.getSession(false);
         User u = (session == null) ? null : (User) session.getAttribute("user");
         if (u == null || u.getRole() != 1) {
-            resp.sendRedirect(req.getContextPath() + "/auth/Login.jsp");
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 

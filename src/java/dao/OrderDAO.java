@@ -151,6 +151,43 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
+    public List<Order> findByUser(int userId) {
+        List<Order> list = new ArrayList<>();
+        String sql = """
+            SELECT order_id, user_id, quantity, total, order_date, status
+              FROM orders
+             WHERE user_id = ?
+             ORDER BY order_date DESC, order_id DESC
+            """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapOrder(rs));
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "findByUser failed", ex);
+        }
+        return list;
+    }
+
+    public Order findByIdAndUser(int orderId, int userId) {
+        String sql = """
+            SELECT order_id, user_id, quantity, total, order_date, status
+              FROM orders
+             WHERE order_id = ? AND user_id = ?
+            """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapOrder(rs);
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "findByIdAndUser failed", ex);
+        }
+        return null;
+    }
+
     /* ===================== CREATE / UPDATE / DELETE ===================== */
     public boolean insert(Order o, List<OrderDetail> details) {
         String sqlOrder  = "INSERT INTO orders(user_id, quantity, total, order_date, status) VALUES(?,?,?,?,?)";

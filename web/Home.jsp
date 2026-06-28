@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib prefix="c"   uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="c"   uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 
@@ -302,10 +302,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const id = btn.dataset.id;
 
       try {
+        const payload = new URLSearchParams({id, quantity: 1});
         const res = await fetch('${ctx}/cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'id=' + encodeURIComponent(id)
+          body: payload.toString()
         });
 
         const data = await res.json();

@@ -8,7 +8,8 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.List; 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,27 +31,28 @@ public class ProductDetailController extends HttpServlet {
             ProductDAOS dao = new ProductDAOS();
             Product product = dao.getProductByID(id);
 
-            // 3. Xử lý trường hợp sản phẩm tồn tại
-            if (product != null) {
-                // Lấy category (String) và productId của sản phẩm hiện tại
-                String category = product.getCategory();
-                int productId = product.getProductId();
-
-                // Gọi DAO để lấy danh sách sản phẩm liên quan
-             
-                
-                // Đặt danh sách sản phẩm liên quan lên request
-            
-                
-            } else {
-                // Xử lý trường hợp không tìm thấy sản phẩm
+            if (product == null) {
                 request.setAttribute("errorMessage", "Không tìm thấy sản phẩm bạn yêu cầu.");
+                request.getRequestDispatcher("ProductDetail.jsp").forward(request, response);
+                return;
             }
 
-            // 4. Đặt sản phẩm chính (có thể là null) lên request
-            request.setAttribute("productDetail", product);
+            String category = product.getCategory();
+            int productId = product.getProductId();
 
-            // 5. Chuyển sang trang JSP để hiển thị
+            List<Product> related = new ArrayList<>();
+            if (category != null && !category.isBlank()) {
+                for (Product p : dao.getProductsByCategory(category)) {
+                    if (p.getProductId() != productId) {
+                        related.add(p);
+                    }
+                    if (related.size() >= 8) break;
+                }
+            }
+
+            request.setAttribute("productDetail", product);
+            request.setAttribute("relatedProducts", related);
+
             request.getRequestDispatcher("ProductDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
